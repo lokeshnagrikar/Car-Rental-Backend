@@ -5,29 +5,30 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class CarRentalApplication {
-	// The @SpringBootApplication annotation is a convenience annotation
-	// that adds @Configuration, @EnableAutoConfiguration, and @ComponentScan.
-	// It indicates that this class is the main configuration class for the Spring Boot application.
+	// The CarRentalApplication class is the main entry point of the Spring Boot application.
+	// It uses the @SpringBootApplication annotation to enable autoconfiguration and component scanning.
+	// The main method starts the Spring Boot application by calling SpringApplication.run().
 
-	// The main method is the entry point of the Java application.
-	// It uses SpringApplication.run to launch the application.
-	// The SpringApplication.run method bootstraps the application,
-	// starting the embedded server (like Tomcat) and initializing the Spring context.
-	// The CarRentalApplication class is the main entry point of the application.
 
-	// Main method: the entry point of the Java application
-	// SpringApplication.run: bootstraps the application and starts the embedded server
+
 	public static void main(String[] args) {
-		// Starting point of the Spring Boot application
-		// The SpringApplication.run method bootstraps the application
-		// and starts the embedded server.
-		// The CarRentalApplication class is the main entry point of the application.
 		SpringApplication.run(CarRentalApplication.class, args);
+		// The main method is the starting point of the application.
+		// It uses SpringApplication.run() to launch the application.
+		// Any command-line arguments can be passed to the application through the args parameter.
+		// The application will start with the default configurations and scan for components in the specified package.
+		// The application will also load the embedded web server (like Tomcat) and start listening for incoming requests.
+		// This method is responsible for bootstrapping the entire Spring application context.
+
+		// The application will start running and be ready to handle incoming requests.
+		// Any configuration properties defined in the application.properties or application.yml files will be loaded.
+		// The application will also perform any necessary database migrations if configured.
+		// Once the application is started, it will log the startup information to the console or configured logging destination.
+
+		// The main method is typically the entry point of a Java application,
+		// and in this case, it serves as the starting point for the Spring Boot application.
+
+		// Additional configurations or initializations can be done here if needed.
 	}
 
-
 }
-// This class is annotated with @SpringBootApplication, which is a convenience
-// annotation that adds @Configuration, @EnableAutoConfiguration, and @ComponentScan.
-// It indicates that this class is the main configuration class for the Spring Boot application.
-// The main method uses SpringApplication.run to launch the application.
