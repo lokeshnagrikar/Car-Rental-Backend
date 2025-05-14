@@ -27,6 +27,22 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "Authentication API")
 public class AuthController {
 
+    // The AuthController class handles authentication-related requests,
+    // such as login, signup, password reset, and token refresh.
+    // It uses the AuthenticationManager to authenticate users,
+    // the UserService to manage user data, and the JwtUtils to generate and validate JWT tokens.
+
+    // The AuthenticationManager is used to authenticate users based on their credentials.
+    // The UserService is responsible for user-related operations, such as creating users and managing roles.
+    // The JwtUtils is used for generating and validating JWT tokens for secure communication.
+
+    // The @RequestMapping annotation is used to specify the base URL for all endpoints in this controller.
+    // The @RestController annotation indicates that this class is a RESTful controller,
+    // and the @RequiredArgsConstructor annotation generates a constructor with required arguments for dependency injection.
+
+    // The @Operation annotation is used to document the API endpoints for OpenAPI (Swagger) documentation.
+    // The @Tag annotation is used to group related API endpoints under a common tag in the documentation.
+
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtUtils jwtUtils;
