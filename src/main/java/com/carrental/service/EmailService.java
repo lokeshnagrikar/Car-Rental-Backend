@@ -17,14 +17,14 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:noreply@carrental.com}")
-    private String fromEmail;
-
     @Value("${app.email.enabled:false}")
     private boolean emailEnabled;
 
+    @Value("${spring.mail.username:noreply@carrental.com}")
+    private String fromEmail;
+
     @Async
-    public void sendPasswordResetEmail(String to, String resetLink) {
+    public void sendPasswordResetEmail(String to, String token) {
         if (!emailEnabled) {
             log.info("Email sending is disabled. Would have sent password reset email to: {}", to);
             return;
@@ -38,24 +38,27 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject("Password Reset Request");
 
-            String emailContent =
-                    "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>" +
-                            "<h2 style='color: #3b82f6;'>Password Reset Request</h2>" +
-                            "<p>Hello,</p>" +
-                            "<p>We received a request to reset your password. Click the link below to set a new password:</p>" +
-                            "<p><a href='" + resetLink + "' style='display: inline-block; background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>Reset Password</a></p>" +
-                            "<p>If you didn't request a password reset, please ignore this email.</p>" +
-                            "<p>This link will expire in 30 minutes.</p>" +
-                            "<p>Thank you,<br>Car Rental Team</p>" +
-                            "</div>";
+            String content = getString(token);
 
-            helper.setText(emailContent, true);
+            helper.setText(content, true);
 
             mailSender.send(message);
             log.info("Password reset email sent to: {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send password reset email to: {}", to, e);
+            // Don't throw the exception to prevent disrupting the application flow
         }
+    }
+
+    private static String getString(String token) {
+        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+        String content = "<p>Hello,</p>"
+                + "<p>You have requested to reset your password.</p>"
+                + "<p>Click the link below to change your password:</p>"
+                + "<p><a href=\"" + resetUrl + "\">Reset Password</a></p>"
+                + "<p>If you did not request a password reset, please ignore this email.</p>"
+                + "<p>Regards,<br>Car Rental Team</p>";
+        return content;
     }
 
     @Async
@@ -73,22 +76,84 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject("Booking Confirmation");
 
-            String emailContent =
-                    "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>" +
-                            "<h2 style='color: #3b82f6;'>Booking Confirmation</h2>" +
-                            "<p>Hello,</p>" +
-                            "<p>Thank you for your booking with Car Rental. Here are your booking details:</p>" +
-                            bookingDetails +
-                            "<p>If you have any questions, please contact our customer service.</p>" +
-                            "<p>Thank you,<br>Car Rental Team</p>" +
-                            "</div>";
+            String content = "<p>Hello,</p>"
+                    + "<p>Your booking has been confirmed.</p>"
+                    + "<p>Booking Details:</p>"
+                    + "<p>" + bookingDetails + "</p>"
+                    + "<p>Thank you for choosing our service.</p>"
+                    + "<p>Regards,<br>Car Rental Team</p>";
 
-            helper.setText(emailContent, true);
+            helper.setText(content, true);
 
             mailSender.send(message);
             log.info("Booking confirmation email sent to: {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send booking confirmation email to: {}", to, e);
+            // Don't throw the exception to prevent disrupting the application flow
+        }
+    }
+
+    @Async
+    public void sendPaymentConfirmationEmail(String to, String paymentDetails) {
+        if (!emailEnabled) {
+            log.info("Email sending is disabled. Would have sent payment confirmation email to: {}", to);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Payment Confirmation");
+
+            String content = "<p>Hello,</p>"
+                    + "<p>Your payment has been processed successfully.</p>"
+                    + "<p>Payment Details:</p>"
+                    + "<p>" + paymentDetails + "</p>"
+                    + "<p>Thank you for your payment.</p>"
+                    + "<p>Regards,<br>Car Rental Team</p>";
+
+            helper.setText(content, true);
+
+            mailSender.send(message);
+            log.info("Payment confirmation email sent to: {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send payment confirmation email to: {}", to, e);
+            // Don't throw the exception to prevent disrupting the application flow
+        }
+    }
+
+    @Async
+    public void sendWelcomeEmail(String to, String name) {
+        if (!emailEnabled) {
+            log.info("Email sending is disabled. Would have sent welcome email to: {}", to);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("Welcome to Car Rental Service");
+
+            String content = "<p>Hello " + name + ",</p>"
+                    + "<p>Welcome to our Car Rental Service!</p>"
+                    + "<p>Thank you for registering with us. We're excited to have you as a member.</p>"
+                    + "<p>You can now browse our selection of cars and make bookings through our platform.</p>"
+                    + "<p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>"
+                    + "<p>Regards,<br>Car Rental Team</p>";
+
+            helper.setText(content, true);
+
+            mailSender.send(message);
+            log.info("Welcome email sent to: {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to send welcome email to: {}", to, e);
+            // Don't throw the exception to prevent disrupting the application flow
         }
     }
 }

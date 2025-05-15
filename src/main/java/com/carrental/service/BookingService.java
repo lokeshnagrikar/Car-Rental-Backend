@@ -10,7 +10,6 @@ import com.carrental.repository.BookingRepository;
 import com.carrental.repository.CarRepository;
 import com.carrental.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -95,20 +93,19 @@ public class BookingService {
                 .endDate(bookingRequest.getEndDate())
                 .totalPrice(totalPrice)
                 .status(BookingStatus.PENDING)
+                .pickupLocation(bookingRequest.getPickupLocation())
+                .dropOffLocation(bookingRequest.getDropOffLocation())
                 .build();
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        // Send confirmation email asynchronously - won't block the booking process
-        try {
-            String bookingDetails = "<p><strong>Car:</strong> " + car.getMake() + " " + car.getModel() + "</p>"
-                    + "<p><strong>Dates:</strong> " + bookingRequest.getStartDate() + " to " + bookingRequest.getEndDate() + "</p>"
-                    + "<p><strong>Total Price:</strong> $" + totalPrice + "</p>";
-            emailService.sendBookingConfirmationEmail(user.getEmail(), bookingDetails);
-        } catch (Exception e) {
-            // Log the error but don't fail the booking
-            log.error("Failed to send booking confirmation email", e);
-        }
+        // Send confirmation email
+        String bookingDetails = "<p><strong>Car:</strong> " + car.getMake() + " " + car.getModel() + "</p>"
+                + "<p><strong>Dates:</strong> " + bookingRequest.getStartDate() + " to " + bookingRequest.getEndDate() + "</p>"
+                + "<p><strong>Pickup Location:</strong> " + bookingRequest.getPickupLocation() + "</p>"
+                + "<p><strong>Drop-off Location:</strong> " + bookingRequest.getDropOffLocation() + "</p>"
+                + "<p><strong>Total Price:</strong> $" + totalPrice + "</p>";
+        emailService.sendBookingConfirmationEmail(user.getEmail(), bookingDetails);
 
         return mapToBookingResponse(savedBooking);
     }
@@ -171,6 +168,8 @@ public class BookingService {
                 .totalPrice(booking.getTotalPrice())
                 .status(booking.getStatus())
                 .createdAt(booking.getCreatedAt())
+                .pickupLocation(booking.getPickupLocation())
+                .dropOffLocation(booking.getDropOffLocation())
                 .build();
     }
 }

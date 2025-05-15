@@ -9,6 +9,7 @@ import com.carrental.model.Role;
 import com.carrental.model.User;
 import com.carrental.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -36,6 +38,10 @@ public class UserService {
                 .name(signupRequest.getName())
                 .email(signupRequest.getEmail())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
+                .phone(signupRequest.getPhone())
+                .dateOfBirth(signupRequest.getDateOfBirth())
+                .address(signupRequest.getAddress())
+                .drivingLicense(signupRequest.getDrivingLicense())
                 .role(Role.CUSTOMER)
                 .enabled(true)
                 .build();
@@ -54,6 +60,10 @@ public class UserService {
                 .name(signupRequest.getName())
                 .email(signupRequest.getEmail())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
+                .phone(signupRequest.getPhone())
+                .dateOfBirth(signupRequest.getDateOfBirth())
+                .address(signupRequest.getAddress())
+                .drivingLicense(signupRequest.getDrivingLicense())
                 .role(Role.ADMIN)
                 .enabled(true)
                 .build();
@@ -90,6 +100,14 @@ public class UserService {
             throw new IllegalArgumentException("Email is already in use!");
         }
         user.setEmail(signupRequest.getEmail());
+
+        // Update additional fields
+        user.setPhone(signupRequest.getPhone());
+        user.setDateOfBirth(signupRequest.getDateOfBirth());
+        user.setAddress(signupRequest.getAddress());
+        user.setDrivingLicense(signupRequest.getDrivingLicense());
+
+        // Only update password if provided
         if (signupRequest.getPassword() != null && !signupRequest.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         }
@@ -108,24 +126,39 @@ public class UserService {
 
     @Transactional
     public void initiatePasswordReset(PasswordResetRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
+        try {
+            User user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + request.getEmail()));
 
-        String token = UUID.randomUUID().toString();
-        user.setResetToken(token);
-        userRepository.save(user);
+            String token = UUID.randomUUID().toString();
+            user.setResetToken(token);
+            userRepository.save(user);
 
-        emailService.sendPasswordResetEmail(user.getEmail(), token);
+            // Send email (this won't throw exceptions now)
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+
+            log.info("Password reset initiated for user: {}", request.getEmail());
+        } catch (Exception e) {
+            log.error("Error initiating password reset for email: {}", request.getEmail(), e);
+            throw e;
+        }
     }
 
     @Transactional
     public void resetPassword(PasswordUpdateRequest request) {
-        User user = userRepository.findByResetToken(request.getToken())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
+        try {
+            User user = userRepository.findByResetToken(request.getToken())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
 
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setResetToken(null);
-        userRepository.save(user);
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setResetToken(null);
+            userRepository.save(user);
+
+            log.info("Password reset successful for user ID: {}", user.getId());
+        } catch (Exception e) {
+            log.error("Error resetting password with token: {}", request.getToken(), e);
+            throw e;
+        }
     }
 
     private UserResponse mapToUserResponse(User user) {
@@ -133,6 +166,10 @@ public class UserService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .phone(user.getPhone())
+                .dateOfBirth(user.getDateOfBirth())
+                .address(user.getAddress())
+                .drivingLicense(user.getDrivingLicense())
                 .role(user.getRole())
                 .build();
     }

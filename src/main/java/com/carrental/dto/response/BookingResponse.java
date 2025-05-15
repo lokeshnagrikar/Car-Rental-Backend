@@ -11,8 +11,8 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class BookingResponse {
     private Long id;
     private UserResponse user;
@@ -22,4 +22,6 @@ public class BookingResponse {
     private BigDecimal totalPrice;
     private BookingStatus status;
     private LocalDate createdAt;
+    private String pickupLocation;
+    private String dropOffLocation;
 }

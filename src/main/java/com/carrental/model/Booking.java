@@ -44,6 +44,12 @@ public class Booking {
 
     private LocalDate createdAt;
 
+    @NotNull
+    private String pickupLocation;
+
+    @NotNull
+    private String dropOffLocation;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDate.now();
