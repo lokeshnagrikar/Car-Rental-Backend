@@ -1,6 +1,7 @@
 package com.carrental.controller;
 
 import com.carrental.dto.request.SignupRequest;
+import com.carrental.dto.response.MessageResponse;
 import com.carrental.dto.response.UserResponse;
 import com.carrental.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,10 +9,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Users", description = "User management API")
 @SecurityRequirement(name = "bearerAuth")
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -60,8 +65,40 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.isUser(authentication, #id)")
     @Operation(summary = "Update user (Admin or self)")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody SignupRequest signupRequest) {
+        log.info("Updating user with ID: {}", id);
         UserResponse updatedUser = userService.updateUser(id, signupRequest);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping(value = "/{id}/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isUser(authentication, #id)")
+    @Operation(summary = "Upload profile picture (Admin or self)")
+    public ResponseEntity<?> uploadProfilePicture(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+
+        log.info("Uploading profile picture for user ID: {}", id);
+
+        if (file.isEmpty()) {
+            log.warn("Empty file uploaded for user ID: {}", id);
+            return ResponseEntity.badRequest().body(new MessageResponse("Please select a file to upload"));
+        }
+
+        // Check file type
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            log.warn("Invalid file type uploaded for user ID: {}: {}", id, contentType);
+            return ResponseEntity.badRequest().body(new MessageResponse("Please upload an image file"));
+        }
+
+        try {
+            UserResponse updatedUser = userService.updateProfilePicture(id, file);
+            log.info("Profile picture updated successfully for user ID: {}", id);
+            return ResponseEntity.ok(updatedUser);
+        } catch (Exception e) {
+            log.error("Error uploading profile picture for user ID: {}", id, e);
+            return ResponseEntity.badRequest().body(new MessageResponse("Failed to upload profile picture: " + e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -20,5 +20,6 @@ public class UserResponse {
     private LocalDate dateOfBirth;
     private String address;
     private String drivingLicense;
+    private String profilePicture;
     private Role role;
 }

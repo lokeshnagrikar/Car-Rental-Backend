@@ -54,6 +54,10 @@ public class User implements UserDetails {
     @Size(max = 50)
     private String drivingLicense;
 
+    // Profile picture filename
+    @Size(max = 255)
+    private String profilePicture;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 

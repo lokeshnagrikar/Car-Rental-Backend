@@ -1,6 +1,7 @@
 package com.carrental.service;
 
 import com.carrental.exception.FileStorageException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -17,16 +18,17 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class FileStorageService {
 
     private final Path fileStorageLocation;
-
 
     public FileStorageService(@Value("${file.upload-dir}") String uploadDir) {
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
 
         try {
             Files.createDirectories(this.fileStorageLocation);
+            log.info("Created file storage directory: {}", this.fileStorageLocation);
         } catch (Exception ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored.", ex);
         }
@@ -54,6 +56,7 @@ public class FileStorageService {
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
+            log.info("Stored file: {} (original: {})", fileName, originalFileName);
             return fileName;
         } catch (IOException ex) {
             throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
@@ -67,10 +70,34 @@ public class FileStorageService {
             if (resource.exists()) {
                 return resource;
             } else {
+                log.warn("File not found: {}", fileName);
                 throw new FileStorageException("File not found " + fileName);
             }
         } catch (MalformedURLException ex) {
             throw new FileStorageException("File not found " + fileName, ex);
         }
+    }
+
+    public void deleteFile(String fileName) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (deleted) {
+                log.info("Deleted file: {}", fileName);
+            } else {
+                log.warn("File not found for deletion: {}", fileName);
+            }
+        } catch (IOException ex) {
+            log.error("Error deleting file: {}", fileName, ex);
+            throw new FileStorageException("Could not delete file " + fileName, ex);
+        }
+    }
+
+    public boolean fileExists(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return false;
+        }
+        Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+        return Files.exists(filePath);
     }
 }

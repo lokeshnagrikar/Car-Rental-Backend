@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final FileStorageService fileStorageService;
 
     @Transactional
     public UserResponse createUser(SignupRequest signupRequest) {
@@ -92,14 +94,19 @@ public class UserService {
 
     @Transactional
     public UserResponse updateUser(Long id, SignupRequest signupRequest) {
+        log.info("Updating user with ID: {}", id);
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         user.setName(signupRequest.getName());
-        if (!user.getEmail().equals(signupRequest.getEmail()) && userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new IllegalArgumentException("Email is already in use!");
+
+        // Only check email uniqueness if it's changed
+        if (!user.getEmail().equals(signupRequest.getEmail())) {
+            if (userRepository.existsByEmail(signupRequest.getEmail())) {
+                throw new IllegalArgumentException("Email is already in use!");
+            }
+            user.setEmail(signupRequest.getEmail());
         }
-        user.setEmail(signupRequest.getEmail());
 
         // Update additional fields
         user.setPhone(signupRequest.getPhone());
@@ -113,7 +120,34 @@ public class UserService {
         }
 
         User updatedUser = userRepository.save(user);
+        log.info("User updated successfully: {}", updatedUser.getId());
         return mapToUserResponse(updatedUser);
+    }
+
+    @Transactional
+    public UserResponse updateProfilePicture(Long userId, MultipartFile file) {
+        log.info("Updating profile picture for user ID: {}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        try {
+            // Delete old profile picture if exists
+            if (user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+                log.info("Deleting old profile picture: {}", user.getProfilePicture());
+                fileStorageService.deleteFile(user.getProfilePicture());
+            }
+
+            // Store the new profile picture
+            String fileName = fileStorageService.storeFile(file);
+            user.setProfilePicture(fileName);
+
+            User updatedUser = userRepository.save(user);
+            log.info("Profile picture updated for user ID: {}", userId);
+            return mapToUserResponse(updatedUser);
+        } catch (Exception e) {
+            log.error("Error updating profile picture for user ID: {}", userId, e);
+            throw new RuntimeException("Could not update profile picture: " + e.getMessage(), e);
+        }
     }
 
     @Transactional
@@ -170,6 +204,7 @@ public class UserService {
                 .dateOfBirth(user.getDateOfBirth())
                 .address(user.getAddress())
                 .drivingLicense(user.getDrivingLicense())
+                .profilePicture(user.getProfilePicture())
                 .role(user.getRole())
                 .build();
     }
