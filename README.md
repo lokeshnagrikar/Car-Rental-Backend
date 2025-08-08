@@ -74,8 +74,8 @@ java -jar target/car-rental-backend.jar
 
 5. **Access the application**
 
-1. The API will be available at: `http://localhost:8080`
-2. Swagger UI: `http://localhost:8081/swagger-ui.html`
+1. The API will be available at: `http://localhost:8081`
+2. Swagger UI: `[http://localhost:8081/swagger-ui.html](http://localhost:8081/api/swagger-ui/index.htm)`
 
 
 
