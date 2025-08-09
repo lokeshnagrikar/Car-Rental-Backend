@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -69,6 +70,16 @@ public class UserController {
         UserResponse updatedUser = userService.updateUser(id, signupRequest);
         return ResponseEntity.ok(updatedUser);
     }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @userSecurity.isUser(authentication, #id)")
+    @Operation(summary = "Partially update user (Admin or self)")
+    public ResponseEntity<UserResponse> partialUpdateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        log.info("Partially updating user with ID: {}", id);
+        UserResponse updatedUser = userService.partialUpdateUser(id, updates);
+        return ResponseEntity.ok(updatedUser);
+    }
+
 
     @PostMapping(value = "/{id}/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN') or @userSecurity.isUser(authentication, #id)")

@@ -15,10 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.Map;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 @Service
 @RequiredArgsConstructor
@@ -157,6 +160,55 @@ public class UserService {
         log.info("User updated successfully: {}", updatedUser.getId());
         return mapToUserResponse(updatedUser);
     }
+
+    @Transactional
+    public UserResponse partialUpdateUser(Long id, Map<String, Object> updates) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        updates.forEach((key, value) -> {
+            try {
+                Field field = User.class.getDeclaredField(key);
+                field.setAccessible(true);
+
+                // Handle special cases, like password encoding, LocalDate parsing, etc.
+                if ("password".equals(key)) {
+                    if (value != null && !value.toString().isEmpty()) {
+                        String encodedPassword = passwordEncoder.encode(value.toString());
+                        field.set(user, encodedPassword);
+                    }
+                } else if ("dateOfBirth".equals(key)) {
+                    if (value != null) {
+                        try {
+                            LocalDate dob;
+                            if (value instanceof String) {
+                                dob = LocalDate.parse((String) value);
+                            } else {
+                                dob = (LocalDate) value;
+                            }
+                            field.set(user, dob);
+                        } catch (DateTimeParseException e) {
+                            throw new IllegalArgumentException("Invalid date format for dateOfBirth");
+                        }
+                    } else {
+                        field.set(user, null);
+                    }
+                } else {
+                    // General case for other fields, type casting may be required depending on your User fields
+                    field.set(user, value);
+                }
+            } catch (NoSuchFieldException e) {
+                log.warn("No such field '{}' in User entity, ignoring", key);
+            } catch (IllegalAccessException e) {
+                log.error("Failed to set field '{}' during partial update", key, e);
+                throw new RuntimeException(e);
+            }
+        });
+
+        User updatedUser = userRepository.save(user);
+        return mapToUserResponse(updatedUser);
+    }
+
 
     @Transactional
     public UserResponse updateProfilePicture(Long userId, MultipartFile file) {
