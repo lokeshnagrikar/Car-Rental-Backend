@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                         auth
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll() // Add this line to permit all auth endpoints with /api prefix
+                                .requestMatchers("/api/auth/signup").permitAll()
                                 // Swagger + OpenAPI
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers("/swagger-ui/**").permitAll()

@@ -30,10 +30,32 @@ public class UserService {
     private final EmailService emailService;
     private final FileStorageService fileStorageService;
 
+//    @Transactional
+//    public UserResponse createUser(SignupRequest signupRequest) {
+//        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+//            throw new IllegalArgumentException("Email is already in use!");
+//        }
+//
+//        User user = User.builder()
+//                .name(signupRequest.getName())
+//                .email(signupRequest.getEmail())
+//                .password(passwordEncoder.encode(signupRequest.getPassword()))
+//                .phone(signupRequest.getPhone())
+//                .dateOfBirth(signupRequest.getDateOfBirth())
+//                .address(signupRequest.getAddress())
+//                .drivingLicense(signupRequest.getDrivingLicense())
+//                .role(Role.CUSTOMER)
+//                .enabled(true)
+//                .build();
+//
+//        User savedUser = userRepository.save(user);
+//        return mapToUserResponse(savedUser);
+//    }
+
     @Transactional
     public UserResponse createUser(SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new IllegalArgumentException("Email is already in use!");
+            throw new RuntimeException("Email already exists");
         }
 
         User user = User.builder()
@@ -49,7 +71,18 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        return mapToUserResponse(savedUser);
+
+        UserResponse response = new UserResponse();
+        response.setId(savedUser.getId());
+        response.setName(savedUser.getName());
+        response.setEmail(savedUser.getEmail());
+        response.setPhone(savedUser.getPhone());
+        response.setDateOfBirth(savedUser.getDateOfBirth());
+        response.setAddress(savedUser.getAddress());
+        response.setDrivingLicense(savedUser.getDrivingLicense());
+        response.setRole(savedUser.getRole());
+
+        return response;
     }
 
     @Transactional
