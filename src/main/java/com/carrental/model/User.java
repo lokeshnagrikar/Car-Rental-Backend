@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.constraints.Pattern;
+
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -44,6 +46,10 @@ public class User implements UserDetails {
     private String password;
 
     @Size(max = 15)
+    @Pattern(
+            regexp = "^(\\+91[0-9]{10}|[0-9]{10})$",
+            message = "Phone number must be 10 digits or start with +91 followed by 10 digits"
+    )
     private String phone;
 
     private LocalDate dateOfBirth;

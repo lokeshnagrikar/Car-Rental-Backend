@@ -24,9 +24,13 @@ public class SignupRequest {
     @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters")
     private String password;
 
-    @Pattern(regexp = "^$|^[0-9]{10}$", message = "Phone number must be 10 digits")
+    @Pattern(
+            regexp = "^(\\+91[0-9]{10}|[0-9]{10})$",
+            message = "Phone number must be 10 digits or start with +91 followed by 10 digits"
+    )
     private String phone;
 
+//    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
     @Size(max = 255, message = "Address must be less than 255 characters")

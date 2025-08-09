@@ -54,6 +54,7 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(SignupRequest signupRequest) {
+        log.info("Creating user with email: {}", signupRequest.getEmail());
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
