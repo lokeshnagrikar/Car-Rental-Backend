@@ -36,6 +36,7 @@ public class Car {
     @Positive
     private BigDecimal pricePerDay;
 
+    @Builder.Default
     private boolean available = true;
 
     private String imageUrl;

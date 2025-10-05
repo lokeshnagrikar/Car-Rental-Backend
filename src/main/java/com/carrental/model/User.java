@@ -13,7 +13,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.Pattern;
 
-
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -69,6 +68,7 @@ public class User implements UserDetails {
 
     private String resetToken;
 
+    @Builder.Default
     private boolean enabled = true;
 
     @Override
