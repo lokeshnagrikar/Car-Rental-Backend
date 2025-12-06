@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# ============================
+# IMPORTANT - SECURITY
+# ============================
+.env
+*.env
+.env.*
+
+# Ignore logs
+*.log
+
+# Ignore file uploads
+uploads/
