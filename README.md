@@ -68,7 +68,7 @@ mvn spring-boot:run
 Alternatively, you can run:
 
 ```shellscript
-java -jar target/car-rental-backend.jar
+java -jar target/car-rental-api-0.0.1-SNAPSHOT.jar
 ```
 
 
@@ -119,7 +119,7 @@ This application implements Spring Security with JWT for authentication. The sec
 The API is documented using Swagger. Once the application is running, you can access the Swagger UI at:
 
 ```
-[http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+[http://localhost:8081/api/swagger-ui.html](http://localhost:8081/api/swagger-ui.html)
 ```
 
 ### Key API Endpoints

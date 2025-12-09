@@ -1,0 +1,40 @@
+# Maven
+target/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Local development
+src/main/resources/application-local.properties
+
+# Build files
+mvnw
+mvnw.cmd
+pom.xml.versionsBackup
+
+# Git
+.git/
+
+# Test files
+*.test
+
+# Uploads (handled via volume)
+uploads/
+!uploads/images/.gitkeep
