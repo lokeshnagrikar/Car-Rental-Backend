@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `bookings` (
   `total_price` decimal(10,2) NOT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'PENDING',
   `pickup_location` varchar(255) NOT NULL,
-  `dropoff_location` varchar(255) NOT NULL,
+  `drop_off_location` varchar(255) NOT NULL,
   `created_at` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`),
